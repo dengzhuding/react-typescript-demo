@@ -1,14 +1,33 @@
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
 module.exports = {
     mode: 'development',
-    entry: "./src/index.tsx",
+    entry: {
+      index: "./src/index.tsx",
+      hello: "./src/hello.tsx"
+    },
+    plugins: [
+      new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
+      new HtmlWebpackPlugin({
+        title: "development html",
+        template: path.join(__dirname, "public/index.html")
+      })
+    ],
     output: {
-        filename: "bundle.js",
-        path: __dirname + "/dist"
+        // filename: "bundle.js",
+        filename: "[name].[contenthash].bundle.js",
+        path: path.resolve(__dirname, "dist"),
+        publicPath: '/'
     },
 
     // Enable sourcemaps for debugging webpack's output.
-    devtool: "source-map",
+    devtool: "inline-source-map",
 
+    devServer: {
+      contentBase: './dist'
+    },
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: [".ts", ".tsx", ".js", ".json"]
@@ -29,7 +48,7 @@ module.exports = {
     // This is important because it allows us to avoid bundling all of our
     // dependencies, which allows browsers to cache those libraries between builds.
     externals: {
-        "react": "React",
-        "react-dom": "ReactDOM"
+        // "react": "React",
+        // "react-dom": "ReactDOM"
     }
 };
