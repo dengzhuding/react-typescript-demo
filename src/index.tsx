@@ -1,14 +1,16 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 
-import {Hello} from './components/hello';
+import {Hello} from './common/components/hello';
 // import {printStr} from './utils/index'
+import Home from '@pages/home/index'
 
 // printStr('here is index');
-import('./utils/index').then(utils => {
+import('./common/utils/index').then(utils => {
   console.log(utils)
 })
 ReactDom.render(
-  <Hello compiler="TypeScript" framework="React" />,
+  // <Hello compiler="TypeScript" framework="React" />,
+  <Home/>,
   document.getElementById('root')
 )

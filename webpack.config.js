@@ -1,12 +1,19 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+// 生成打包依赖图插件
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
-module.exports = {
-    mode: 'development',
+module.exports = (env, argv) => {
+  return {
+    mode: env.production ? 'production' : 'development',
+    // mode: 'production',
+    devtool: env.production ? 'source-map' : 'eval',
     context: __dirname,
     entry: {
-      index: './src/index.tsx',
+      index: {
+        import: './src/index.tsx'
+      },
       // 'another-module': {
       //   import: './src/another-module.tsx',
       // }
@@ -17,7 +24,7 @@ module.exports = {
         title: 'index-html',
         template: path.join(__dirname, 'public/index.html'),
         filename: 'index.html',
-        chunks: ['index']
+        chunks: ['index', 'react']
       }),
       // new HtmlWebpackPlugin({
       //   title: 'another-module-html',
@@ -25,10 +32,65 @@ module.exports = {
       //   filename: 'another-module.html',
       //   chunks: ['another-module']
       // })
-    ],
+    ]
+    .concat([false && env.production ? '' : new BundleAnalyzerPlugin()]),
     optimization: {
+      // 告知 webpack 当选择模块 id 时需要使用哪种算法 'natural' | 'named' | 'deterministic' | 'size'
+      moduleIds: 'deterministic',
+      // 提取引导模板
+      runtimeChunk: 'single',
       splitChunks: {
-        chunks: 'all'
+        cacheGroups: {
+          react: {
+            name: "chunk-react",
+            test: /[\\/]node_modules[\\/]react|react-dom[\\/]/,
+            chunks: "all",
+            priority: 3,
+            reuseExistingChunk: true,
+            enforce: true
+          },
+          lodash: {
+            name: "chunk-lodash",
+            test: /[\\/]node_modules[\\/]lodash[\\/]/,
+            chunks: "all",
+            priority: 3,
+            reuseExistingChunk: true,
+            enforce: true
+          },
+          zrender: {
+            name: "chunk-zrender",
+            test: /[\\/]node_modules[\\/]zrender[\\/]/,
+            chunks: "all",
+            priority: 3,
+            reuseExistingChunk: true,
+            enforce: true
+          },
+          echarts: {
+            name: "chunk-echarts",
+            test: /[\\/]node_modules[\\/]echarts[\\/]/,
+            chunks: "all",
+            priority: 3,
+            reuseExistingChunk: true,
+            enforce: true
+          },
+          // 提取第三方库
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'chunk-vendors',
+            chunks: 'all',
+            priority: 1,
+            reuseExistingChunk: true,
+            enforce: true
+          },
+          // 提取公共库
+          // common: {
+          //   name: 'chunk-common',
+          //   minChunks: 2,
+          //   priority: 0,
+          //   chunks: 'initial',
+          //   reuseExistingChunk: true
+          // }
+        }
       }
     },
     output: {
@@ -38,15 +100,19 @@ module.exports = {
         publicPath: '/'
     },
 
-    // Enable sourcemaps for debugging webpack's output.
-    devtool: 'inline-source-map',
-
     devServer: {
       contentBase: './dist'
     },
     resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src/'),
+        '@common': path.resolve(__dirname, 'src/common/'),
+        '@components': path.resolve(__dirname, 'src/common/components/'),
+        '@utils': path.resolve(__dirname, 'src/common/utils/'),
+        '@pages': path.resolve(__dirname, 'src/pages/'),
+      },
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: ['.ts', '.tsx', '.js', '.json']
+      extensions: ['.ts', '.tsx', '.js', '.json']
     },
 
     module: {
@@ -70,4 +136,5 @@ module.exports = {
         // 'react': 'React',
         // 'react-dom': 'ReactDOM'
     }
+  }
 };
